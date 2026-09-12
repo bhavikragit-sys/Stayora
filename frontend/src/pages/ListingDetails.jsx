@@ -11,6 +11,7 @@ import api from '../lib/api/axios';
 import { ChevronLeft, ChevronRight, X } from 'lucide-react';
 import { useToast } from '../context/ToastContext';
 import { InlineCalendar } from '../components/ui/InlineCalendar';
+import { NotFound } from './NotFound.jsx';
 
 const ImageGallery = ({ images, title }) => {
   const [lightboxIndex, setLightboxIndex] = useState(null);
@@ -243,15 +244,57 @@ export const ListingDetails = () => {
 
   if (isLoading) {
     return (
-      <div className="max-w-7xl mx-auto px-6 py-12 animate-pulse">
+      <div className="max-w-7xl mx-auto px-6 md:px-12 lg:px-20 py-12 pt-28 md:pt-32 animate-pulse space-y-8">
         <div className="h-10 bg-stayora-grey rounded w-1/3 mb-6"></div>
-        <div className="aspect-[2/1] bg-stayora-grey rounded-card mb-12"></div>
+        <div className="aspect-[16/9] md:aspect-[2/1] bg-stayora-grey rounded-none mb-12 shadow-soft"></div>
       </div>
     );
   }
 
-  if (error || !listing) {
-    return <div className="p-12 text-center text-stayora-red font-bold text-2xl">Listing not found.</div>;
+  // Handle 404 specifically (deleted or non-existent listing)
+  const is404 = error?.response?.status === 404 || (!listing && !error);
+  if (is404) {
+    return (
+      <NotFound
+        title="Listing Not Found"
+        description="The stay you are looking for doesn't exist, has been removed by the host, or is no longer available."
+        actionText="Explore Stays"
+        actionLink="/listings"
+        secondaryActionText="Return Home"
+        secondaryActionLink="/"
+      />
+    );
+  }
+
+  // Handle other unexpected errors (e.g. 500, network failure)
+  if (error) {
+    return (
+      <div className="min-h-[70vh] flex flex-col items-center justify-center text-center px-6 py-16 pt-28 md:pt-32 max-w-xl mx-auto space-y-6 animate-fade-in-up">
+        <span className="text-[11px] font-sans font-bold tracking-[0.25em] text-stayora-red uppercase block select-none">
+          • Error Loading Listing •
+        </span>
+        <h1 className="font-serif text-4xl md:text-5xl text-stayora-black leading-tight">
+          Unable to Load Listing
+        </h1>
+        <p className="text-stayora-black/65 text-base md:text-lg font-sans leading-relaxed">
+          {error.response?.data?.message || 'Something went wrong while retrieving this stay. Please check your internet connection or try again.'}
+        </p>
+        <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4 w-full sm:w-auto">
+          <Button 
+            variant="primary" 
+            onClick={() => queryClient.invalidateQueries({ queryKey: ['listings', id] })}
+            className="w-full sm:w-auto min-w-[160px]"
+          >
+            Try Again
+          </Button>
+          <Link to="/listings" className="w-full sm:w-auto">
+            <Button variant="secondary" className="w-full sm:w-auto min-w-[160px]">
+              Back to Stays
+            </Button>
+          </Link>
+        </div>
+      </div>
+    );
   }
 
   const handleBook = () => {

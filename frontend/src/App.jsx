@@ -18,6 +18,7 @@ import { Terms }          from './pages/Terms.jsx';
 import { Contact }        from './pages/Contact.jsx';
 import { Editorial }      from './pages/Editorial.jsx';
 import { About }          from './pages/About.jsx';
+import { NotFound }       from './pages/NotFound.jsx';
 
 import { Navbar }  from './components/layout/Navbar.jsx';
 import { Footer }  from './components/layout/Footer.jsx';
@@ -46,8 +47,6 @@ const ProtectedRoute = ({ children }) => {
   if (loading) return <div className="p-12 text-center text-stayora-black/50">Loading...</div>;
   return user ? children : <Navigate to={`/login?redirect=${encodeURIComponent(location.pathname)}`} />;
 };
-
-const NotFound = () => <div className="px-6 py-16 text-stayora-red font-bold text-2xl">404 — Not Found</div>;
 
 // ── Animated page wrapper ─────────────────────────────────────────────────────
 const PageWrapper = ({ children }) => {
