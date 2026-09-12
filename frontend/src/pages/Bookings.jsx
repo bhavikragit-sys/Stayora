@@ -1,5 +1,5 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import axios from 'axios';
+import api from '../lib/api/axios';
 import { Button } from '../components/ui/Button';
 import { Textarea } from '../components/ui/Textarea';
 import { useState, useEffect } from 'react';
@@ -58,7 +58,7 @@ export const Bookings = () => {
   const { data, isLoading, error } = useQuery({
     queryKey: ['my-bookings'],
     queryFn: async () => {
-      const res = await axios.get('/api/bookings/me');
+      const res = await api.get('/api/bookings/me');
       return res.data.bookings || [];
     }
   });
@@ -70,7 +70,7 @@ export const Bookings = () => {
     setCancelError('');
     setCancellingId(bookingId);
     try {
-      await axios.patch(`/api/bookings/${bookingId}/cancel`);
+      await api.patch(`/api/bookings/${bookingId}/cancel`);
       queryClient.invalidateQueries({ queryKey: ['my-bookings'] });
       addToast('Booking cancelled successfully', 'success');
     } catch (err) {
@@ -88,7 +88,7 @@ export const Bookings = () => {
     try {
       // POST /api/listings/:id/reviews
       // Payload: bookingId, rating, comment
-      await axios.post(`/api/listings/${reviewBooking.listing._id}/reviews`, {
+      await api.post(`/api/listings/${reviewBooking.listing._id}/reviews`, {
         bookingId: reviewBooking._id,
         rating: Number(rating),
         comment

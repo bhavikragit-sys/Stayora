@@ -6,6 +6,7 @@ import { Button } from '../components/ui/Button';
 import { useAuth } from '../context/AuthContext';
 import { useQueryClient } from '@tanstack/react-query';
 import { formatPrice } from '../lib/formatPrice';
+import api from '../lib/api/axios';
 
 import { ChevronLeft, ChevronRight, X } from 'lucide-react';
 import { useToast } from '../context/ToastContext';
@@ -290,7 +291,7 @@ export const ListingDetails = () => {
       return;
     }
     try {
-      await axios.delete(`/api/reviews/${reviewId}`);
+      await api.delete(`/api/reviews/${reviewId}`);
       queryClient.invalidateQueries({ queryKey: ['listing-reviews', id] });
       queryClient.invalidateQueries({ queryKey: ['listings', id] });
       addToast('Review deleted successfully', 'success');

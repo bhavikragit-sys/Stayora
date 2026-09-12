@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import api from '../lib/api/axios';
 import { useListing } from '../hooks/useListings';
 import { ListingForm } from '../components/listings/ListingForm';
 import { Button } from '../components/ui/Button';
@@ -25,7 +25,7 @@ export const ListingEdit = () => {
     setIsLoading(true);
     
     try {
-      await axios.put(`/api/listings/${id}`, data);
+      await api.put(`/api/listings/${id}`, data);
       queryClient.invalidateQueries({ queryKey: ['listings'] });
       queryClient.invalidateQueries({ queryKey: ['my-listings'] });
       addToast('Listing updated successfully', 'success');
@@ -41,7 +41,7 @@ export const ListingEdit = () => {
   const handleDelete = async () => {
     setIsDeleting(true);
     try {
-      await axios.delete(`/api/listings/${id}`);
+      await api.delete(`/api/listings/${id}`);
       queryClient.invalidateQueries({ queryKey: ['listings'] });
       queryClient.invalidateQueries({ queryKey: ['my-listings'] });
       addToast('Listing deleted successfully', 'success');

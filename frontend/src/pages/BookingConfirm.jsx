@@ -2,7 +2,7 @@ import { useLocation, useParams, useNavigate } from 'react-router-dom';
 import { useListing } from '../hooks/useListings';
 import { Button } from '../components/ui/Button';
 import { useState } from 'react';
-import axios from 'axios';
+import api from '../lib/api/axios';
 import { useQueryClient } from '@tanstack/react-query';
 import { formatPrice } from '../lib/formatPrice';
 import { useToast } from '../context/ToastContext';
@@ -49,7 +49,7 @@ export const BookingConfirm = () => {
     setError('');
     setIsSubmitting(true);
     try {
-      await axios.post(`/api/listings/${id}/bookings`, {
+      await api.post(`/api/listings/${id}/bookings`, {
         checkIn,
         checkOut,
         guests: Number(guests)

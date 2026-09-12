@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import axios from 'axios';
+import api from '../lib/api/axios';
 import { useAuth } from '../context/AuthContext';
 import { SplitAuthLayout } from '../components/layout/SplitAuthLayout';
 import { Input } from '../components/ui/Input';
@@ -21,7 +21,7 @@ export const Login = () => {
     setError('');
     setLoading(true);
     try {
-      await axios.post('/api/auth/login', { email, password });
+      await api.post('/api/auth/login', { email, password });
       await checkAuth();
       
       const searchParams = new URLSearchParams(location.search);

@@ -1,6 +1,6 @@
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
-import axios from 'axios';
+import api from '../../lib/api/axios';
 import { useQueryClient } from '@tanstack/react-query';
 import { useState, useEffect } from 'react';
 
@@ -46,7 +46,7 @@ export const Navbar = () => {
 
   const handleLogout = async () => {
     try {
-      await axios.post('/api/auth/logout');
+      await api.post('/api/auth/logout');
       setUser(null);
       queryClient.clear();
       navigate('/login');

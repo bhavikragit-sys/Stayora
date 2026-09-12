@@ -1,6 +1,6 @@
 import { useParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import axios from 'axios';
+import api from '../lib/api/axios';
 import { useListings } from '../hooks/useListings';
 import { ListingCard, ListingCardSkeleton } from '../components/listings/ListingCard';
 
@@ -11,7 +11,7 @@ export const PublicProfile = () => {
   const { data: profileData, isLoading: isProfileLoading, error: profileError } = useQuery({
     queryKey: ['user-profile', id],
     queryFn: async () => {
-      const res = await axios.get(`/api/users/${id}`);
+      const res = await api.get(`/api/users/${id}`);
       return res.data.user;
     },
     enabled: !!id

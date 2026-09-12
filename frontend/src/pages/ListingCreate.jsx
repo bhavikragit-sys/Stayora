@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import api from '../lib/api/axios';
 import { ListingForm } from '../components/listings/ListingForm';
 
 import { useToast } from '../context/ToastContext';
@@ -16,7 +16,7 @@ export const ListingCreate = () => {
     setIsLoading(true);
     
     try {
-      const response = await axios.post('/api/listings', data);
+      const response = await api.post('/api/listings', data);
       const newListing = response.data.listing;
       addToast('Listing created successfully', 'success');
       navigate(`/listings/${newListing._id}`);

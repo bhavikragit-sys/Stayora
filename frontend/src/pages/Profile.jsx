@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useQuery } from '@tanstack/react-query';
-import axios from 'axios';
+import api from '../lib/api/axios';
 import { useListings } from '../hooks/useListings';
 import { ListingCard, ListingCardSkeleton } from '../components/listings/ListingCard';
 import { Input } from '../components/ui/Input';
@@ -25,7 +25,7 @@ export const Profile = () => {
   const { data: profileStats, isLoading: isStatsLoading } = useQuery({
     queryKey: ['user-profile', user?._id],
     queryFn: async () => {
-      const res = await axios.get(`/api/users/${user._id}`);
+      const res = await api.get(`/api/users/${user._id}`);
       return res.data.user;
     },
     enabled: !!user?._id
@@ -52,7 +52,7 @@ export const Profile = () => {
     }
 
     try {
-      const res = await axios.put('/api/users/me', payload);
+      const res = await api.put('/api/users/me', payload);
       setUser({
         ...user,
         name: res.data.user.name,

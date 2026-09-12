@@ -3,7 +3,7 @@ import { useAuth } from '../context/AuthContext';
 import { Button } from '../components/ui/Button';
 import { useListings } from '../hooks/useListings';
 import { ListingCard } from '../components/listings/ListingCard';
-import axios from 'axios';
+import api from '../lib/api/axios';
 import { useQueryClient, useQuery } from '@tanstack/react-query';
 
 export const Dashboard = () => {
@@ -14,14 +14,14 @@ export const Dashboard = () => {
   const { data, isLoading } = useQuery({
     queryKey: ['my-listings'],
     queryFn: async () => {
-      const res = await axios.get('/api/listings/me');
+      const res = await api.get('/api/listings/me');
       return { items: res.data.listings || [] };
     }
   });
 
   const handleLogout = async () => {
     try {
-      await axios.post('/api/auth/logout');
+      await api.post('/api/auth/logout');
       setUser(null);
       queryClient.clear();
     } catch (err) {
