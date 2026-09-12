@@ -26,6 +26,21 @@ export const ListingForm = ({ initialData, onSubmit, onDelete, isLoading, isEdit
   const fileInputRef = useRef(null);
   const [step, setStep] = useState(1);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [isDragging, setIsDragging] = useState(false);
+
+  // Prevent browser default behavior of opening files when dropped anywhere on window
+  useEffect(() => {
+    const preventDefaults = (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+    };
+    window.addEventListener('dragover', preventDefaults);
+    window.addEventListener('drop', preventDefaults);
+    return () => {
+      window.removeEventListener('dragover', preventDefaults);
+      window.removeEventListener('drop', preventDefaults);
+    };
+  }, []);
 
   // Lock body scroll when Delete modal is open
   useEffect(() => {
@@ -71,21 +86,71 @@ export const ListingForm = ({ initialData, onSubmit, onDelete, isLoading, isEdit
     fileInputRef.current?.click();
   };
 
-  // Handle local image file selection
-  const handleFileChange = (e) => {
-    const files = Array.from(e.target.files || []);
+  // Helper to process and append incoming image files (from input or drag-and-drop)
+  const processFiles = (files) => {
+    const imageFiles = files.filter(file => file.type && file.type.startsWith('image/'));
+    if (imageFiles.length === 0) return;
+
     const newFiles = [];
-    files.forEach(file => {
+    imageFiles.forEach(file => {
       const previewUrl = URL.createObjectURL(file);
+      file._previewUrl = previewUrl;
       newFiles.push(file);
       if (fields.length === 1 && !watchImages[0]?.url) {
-        setValue('images.0.url', previewUrl);
+        setValue('images.0.url', previewUrl, { shouldValidate: true });
       } else {
         append({ url: previewUrl });
       }
     });
     setSelectedFiles((prev) => [...prev, ...newFiles]);
+    trigger('images');
+  };
+
+  // Handle local image file selection from file picker
+  const handleFileChange = (e) => {
+    const files = Array.from(e.target.files || []);
+    processFiles(files);
     e.target.value = '';
+  };
+
+  // Drag and drop event handlers
+  const handleDragOver = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (!isDragging) setIsDragging(true);
+  };
+
+  const handleDragEnter = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(true);
+  };
+
+  const handleDragLeave = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (e.currentTarget.contains(e.relatedTarget)) return;
+    setIsDragging(false);
+  };
+
+  const handleDrop = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+
+    const files = Array.from(e.dataTransfer?.files || []);
+    if (files.length > 0) {
+      processFiles(files);
+    }
+  };
+
+  const handleRemoveImage = (index) => {
+    const urlToRemove = watchImages[index]?.url;
+    if (urlToRemove && urlToRemove.startsWith('blob:')) {
+      setSelectedFiles(prev => prev.filter(file => file._previewUrl !== urlToRemove));
+      URL.revokeObjectURL(urlToRemove);
+    }
+    remove(index);
   };
 
   const handleCustomSubmit = (data) => {
@@ -104,10 +169,19 @@ export const ListingForm = ({ initialData, onSubmit, onDelete, isLoading, isEdit
 
     formData.append('images', JSON.stringify(existingUrls));
 
+    // Get current blob URLs in the form
+    const currentBlobUrls = new Set(
+      (data.images || [])
+        .map(img => img.url)
+        .filter(url => url && url.startsWith('blob:'))
+    );
+
     // Append binary file objects to imageFiles field for Multer
-    selectedFiles.forEach((file) => {
-      formData.append('imageFiles', file);
-    });
+    selectedFiles
+      .filter(file => !file._previewUrl || currentBlobUrls.has(file._previewUrl))
+      .forEach((file) => {
+        formData.append('imageFiles', file);
+      });
 
     onSubmit(formData);
   };
@@ -268,14 +342,26 @@ export const ListingForm = ({ initialData, onSubmit, onDelete, isLoading, isEdit
                 {/* File Upload Zone */}
                 <div 
                   onClick={handleUploadClick}
-                  className="border-2 border-dashed border-[#E5E5E5] hover:border-stayora-black rounded-none py-10 px-6 flex flex-col items-center justify-center gap-3 cursor-pointer transition select-none text-stayora-black/60 hover:text-stayora-black bg-stayora-grey/30 hover:bg-stayora-grey/60 group"
+                  onDragOver={handleDragOver}
+                  onDragEnter={handleDragEnter}
+                  onDragLeave={handleDragLeave}
+                  onDrop={handleDrop}
+                  className={`border-2 border-dashed rounded-none py-10 px-6 flex flex-col items-center justify-center gap-3 cursor-pointer transition-all duration-200 select-none ${
+                    isDragging 
+                      ? 'border-stayora-black bg-stayora-grey/80 scale-[1.01]' 
+                      : 'border-[#E5E5E5] hover:border-stayora-black bg-stayora-grey/30 hover:bg-stayora-grey/60 text-stayora-black/60 hover:text-stayora-black'
+                  } group`}
                 >
-                  <div className="w-12 h-12 rounded-full bg-white border border-[#E5E5E5] flex items-center justify-center text-lg shadow-sm group-hover:scale-105 transition-transform">
+                  <div className="w-12 h-12 rounded-full bg-white border border-[#E5E5E5] flex items-center justify-center text-lg shadow-sm group-hover:scale-105 transition-transform pointer-events-none">
                     ↑
                   </div>
-                  <div className="text-center">
-                    <span className="text-xs font-bold uppercase tracking-wider block">Click to upload or drag and drop</span>
-                    <span className="text-[11px] text-stayora-black/40 mt-1 block">JPG, PNG, WEBP or AVIF (Max 10MB per photo)</span>
+                  <div className="text-center pointer-events-none">
+                    <span className="text-xs font-bold uppercase tracking-wider block">
+                      {isDragging ? 'Drop images here' : 'Click to upload or drag and drop'}
+                    </span>
+                    <span className="text-[11px] text-stayora-black/40 mt-1 block">
+                      JPG, PNG, WEBP or AVIF (Max 10MB per photo)
+                    </span>
                   </div>
                   <input 
                     type="file"
@@ -310,7 +396,7 @@ export const ListingForm = ({ initialData, onSubmit, onDelete, isLoading, isEdit
                             {/* Overlay Delete Button */}
                             <button
                               type="button"
-                              onClick={() => remove(index)}
+                              onClick={() => handleRemoveImage(index)}
                               className="absolute top-2 right-2 bg-stayora-black/70 hover:bg-stayora-red text-white w-7 h-7 flex items-center justify-center rounded-full opacity-90 transition-colors shadow-md text-xs font-bold"
                               title="Remove photo"
                             >
