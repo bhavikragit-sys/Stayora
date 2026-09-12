@@ -31,6 +31,20 @@ export const Navbar = () => {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
+  useEffect(() => {
+    if (isMobileMenuOpen) {
+      const originalOverflow = document.body.style.overflow;
+      document.body.style.overflow = 'hidden';
+      return () => {
+        document.body.style.overflow = originalOverflow;
+      };
+    }
+  }, [isMobileMenuOpen]);
+
+  useEffect(() => {
+    setIsMobileMenuOpen(false);
+  }, [location.pathname]);
+
   const navLinks = user
     ? [
         { name: 'Explore Stays',  path: '/listings'  },
@@ -55,24 +69,29 @@ export const Navbar = () => {
     }
   };
 
-  // Determine theme styling based on route and scroll state (always solid on mobile for visibility)
-  const isTransparent = isHome && !isScrolled && !isMobile;
+  // Determine theme styling based on route and scroll state (transparent on home hero section)
+  const isTransparent = isHome && !isScrolled;
 
   return (
     <>
       <nav 
         className={`fixed top-0 left-0 right-0 h-20 z-50 flex items-center justify-between px-6 md:px-12 lg:px-20 transition-all duration-500 ease-in-out ${
-          isTransparent 
-            ? 'bg-transparent text-white border-b border-white/10' 
-            : 'bg-white/90 backdrop-blur-md text-stayora-black border-b border-stayora-black/[0.04]'
+          isMobileMenuOpen
+            ? 'bg-transparent text-stayora-black border-b border-stayora-black/[0.06]'
+            : isTransparent 
+              ? 'bg-gradient-to-b from-black/50 via-black/15 to-transparent text-white border-b border-white/10' 
+              : 'bg-white/90 backdrop-blur-md text-stayora-black border-b border-stayora-black/[0.04]'
         }`}
       >
         {/* Left — Brand Logo (Serif Italiana) */}
         <div className="flex-1 flex items-center">
           <Link 
             to="/" 
+            onClick={() => setIsMobileMenuOpen(false)}
             className={`font-serif text-2xl tracking-[0.05em] transition-colors duration-500 ${
-              isTransparent ? 'text-white' : 'text-stayora-black'
+              isMobileMenuOpen
+                ? 'text-stayora-black'
+                : isTransparent ? 'text-white drop-shadow-[0_2px_6px_rgba(0,0,0,0.5)]' : 'text-stayora-black'
             }`}
           >
             Stayora
@@ -145,85 +164,131 @@ export const Navbar = () => {
             )}
           </div>
 
-          {/* Mobile Hamburger Menu */}
+          {/* Mobile Animated Morphing Hamburger / Close Icon (min 44x44px tap target) */}
           <button 
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-            className="md:hidden flex flex-col justify-center space-y-1.5 w-8 h-8 focus:outline-none z-50 relative" 
-            aria-label="Menu"
+            className="md:hidden flex items-center justify-center w-11 h-11 -mr-2 focus:outline-none group relative z-50 select-none" 
+            aria-label={isMobileMenuOpen ? "Close navigation menu" : "Open navigation menu"}
           >
-            <span className={`block w-6 h-[1.5px] transform transition-all duration-300 ${isTransparent ? 'bg-white' : 'bg-stayora-black'} ${isMobileMenuOpen ? 'rotate-45 translate-y-[7.5px]' : ''}`}></span>
-            <span className={`block w-6 h-[1.5px] transition-opacity duration-300 ${isTransparent ? 'bg-white' : 'bg-stayora-black'} ${isMobileMenuOpen ? 'opacity-0' : ''}`}></span>
-            <span className={`block w-6 h-[1.5px] transform transition-all duration-300 ${isTransparent ? 'bg-white' : 'bg-stayora-black'} ${isMobileMenuOpen ? '-rotate-45 -translate-y-[7.5px]' : ''}`}></span>
+            <div className="w-6 h-5 relative flex flex-col justify-between items-end">
+              {/* Top Bar */}
+              <span 
+                className={`h-[1.5px] transition-all duration-350 ease-[cubic-bezier(0.16,1,0.3,1)] origin-center ${
+                  isMobileMenuOpen 
+                    ? 'w-6 rotate-45 translate-y-[9px] bg-stayora-black' 
+                    : `w-6 ${isTransparent ? 'bg-white shadow-[0_1px_3px_rgba(0,0,0,0.6)]' : 'bg-stayora-black'}`
+                }`} 
+              />
+              {/* Middle Bar (Architectural shorter bar that collapses) */}
+              <span 
+                className={`h-[1.5px] transition-all duration-200 ease-[cubic-bezier(0.16,1,0.3,1)] ${
+                  isMobileMenuOpen 
+                    ? 'w-0 opacity-0 bg-stayora-black' 
+                    : `w-4 group-hover:w-6 opacity-100 ${isTransparent ? 'bg-white shadow-[0_1px_3px_rgba(0,0,0,0.6)]' : 'bg-stayora-black'}`
+                }`} 
+              />
+              {/* Bottom Bar */}
+              <span 
+                className={`h-[1.5px] transition-all duration-350 ease-[cubic-bezier(0.16,1,0.3,1)] origin-center ${
+                  isMobileMenuOpen 
+                    ? 'w-6 -rotate-45 -translate-y-[9.5px] bg-stayora-black' 
+                    : `w-6 ${isTransparent ? 'bg-white shadow-[0_1px_3px_rgba(0,0,0,0.6)]' : 'bg-stayora-black'}`
+                }`} 
+              />
+            </div>
           </button>
         </div>
       </nav>
 
-      {/* Mobile Drawer Overlay */}
+      {/* Full-Screen Mobile Overlay Menu */}
       <div 
-        className={`fixed inset-0 z-40 bg-stayora-black/25 backdrop-blur-sm transition-opacity duration-300 md:hidden ${
-          isMobileMenuOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
-        }`} 
-        onClick={() => setIsMobileMenuOpen(false)} 
-      />
-      
-      {/* Mobile Drawer Panel */}
-      <div 
-        className={`fixed top-0 right-0 bottom-0 w-[290px] max-w-full bg-white/80 backdrop-blur-md border-l border-[#E5E5E5]/35 z-50 shadow-2xl p-8 flex flex-col justify-between transition-transform duration-350 ease-[cubic-bezier(0.16,1,0.3,1)] md:hidden ${
-          isMobileMenuOpen ? 'translate-x-0' : 'translate-x-full'
+        className={`fixed inset-0 z-40 w-full h-[100dvh] bg-white/95 backdrop-blur-xl flex flex-col justify-between pt-24 px-6 pb-8 md:hidden transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] ${
+          isMobileMenuOpen 
+            ? 'opacity-100 translate-y-0 pointer-events-auto visible' 
+            : 'opacity-0 -translate-y-8 pointer-events-none invisible'
         }`}
       >
-        <div className="space-y-8 text-left">
-          <div className="flex justify-between items-center pb-4 border-b border-[#E5E5E5]/50">
-            <span className="font-serif text-xl tracking-[0.05em]">Stayora</span>
-            <button 
-              onClick={() => setIsMobileMenuOpen(false)} 
-              className="w-8 h-8 flex items-center justify-center border border-[#E5E5E5]/50 text-stayora-black text-xs hover:bg-stayora-grey focus:outline-none"
-            >
-              ✕
-            </button>
-          </div>
-          
-          <nav className="flex flex-col space-y-3 pt-2">
-            {navLinks.map((link) => (
-              <Link
-                key={link.name + link.path}
-                to={link.path}
-                onClick={() => setIsMobileMenuOpen(false)}
-                className="flex justify-between items-center bg-stayora-grey/50 hover:bg-[#EAEAEA] px-4 py-3.5 text-[10px] font-sans font-bold tracking-[0.2em] uppercase text-stayora-black transition-all duration-300 select-none w-full"
-              >
-                <span>{link.name}</span>
-                <span className="text-stayora-black/35 font-serif">→</span>
-              </Link>
-            ))}
+        {/* Mobile Nav Links with Staggered Cascading Reveal */}
+        <div className="flex-1 overflow-y-auto py-6 flex flex-col justify-center">
+          <nav className="flex flex-col space-y-1">
+            {navLinks.map((link, idx) => {
+              const isActive = user
+                ? location.pathname.startsWith(link.path)
+                : (idx === 0 && location.pathname === '/listings') || location.pathname === link.path;
+
+              return (
+                <Link
+                  key={link.name + link.path}
+                  to={link.path}
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  style={{
+                    transitionDelay: isMobileMenuOpen ? `${120 + idx * 60}ms` : '0ms'
+                  }}
+                  className={`group flex items-center justify-between min-h-[52px] py-3.5 border-b border-stayora-black/[0.06] text-[17px] font-sans font-bold tracking-[0.25em] uppercase transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] ${
+                    isMobileMenuOpen 
+                      ? 'opacity-100 translate-y-0' 
+                      : 'opacity-0 translate-y-4'
+                  } ${
+                    isActive
+                      ? 'text-stayora-black'
+                      : 'text-stayora-black/50 hover:text-stayora-black'
+                  }`}
+                >
+                  <span className="relative">
+                    {link.name}
+                    <span 
+                      className={`absolute -bottom-1 left-0 h-[1.5px] transition-all duration-300 ${
+                        isActive ? 'w-full bg-stayora-black' : 'w-0 group-hover:w-full bg-stayora-black/40'
+                      }`} 
+                    />
+                  </span>
+                  <span className={`font-serif text-lg transition-transform duration-300 ${
+                    isActive 
+                      ? 'text-stayora-black translate-x-1' 
+                      : 'text-stayora-black/25 group-hover:text-stayora-black/60 group-hover:translate-x-1'
+                  }`}>
+                    ↗
+                  </span>
+                </Link>
+              );
+            })}
           </nav>
         </div>
 
-        <div className="space-y-4 border-t border-[#E5E5E5]/50 pt-6">
+        {/* Mobile Bottom CTA Section with Staggered Fade */}
+        <div 
+          style={{
+            transitionDelay: isMobileMenuOpen ? `${120 + navLinks.length * 60}ms` : '0ms'
+          }}
+          className={`pb-4 pt-4 border-t border-stayora-black/[0.06] flex-shrink-0 transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] ${
+            isMobileMenuOpen ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
+          }`}
+        >
           {user ? (
             <button
               onClick={() => {
                 setIsMobileMenuOpen(false);
                 handleLogout();
               }}
-              className="w-full text-center text-xs font-sans font-bold tracking-[0.2em] uppercase py-3.5 bg-stayora-red border border-stayora-red text-white hover:bg-[#c9201a] transition-all duration-300"
+              className="w-full min-h-[48px] flex items-center justify-center text-center text-xs font-sans font-bold tracking-[0.2em] uppercase py-3.5 bg-stayora-red border border-stayora-red text-white hover:bg-[#c9201a] transition-all duration-300"
             >
               Log Out
             </button>
           ) : (
             <div className="flex flex-col space-y-3">
               <Link
-                to="/login"
-                onClick={() => setIsMobileMenuOpen(false)}
-                className="w-full text-center text-xs font-sans font-bold tracking-[0.2em] uppercase py-3.5 bg-stayora-grey hover:bg-[#EAEAEA] text-stayora-black transition-colors block"
-              >
-                Log In
-              </Link>
-              <Link
                 to="/signup"
                 onClick={() => setIsMobileMenuOpen(false)}
-                className="w-full text-center text-xs font-sans font-bold tracking-[0.2em] uppercase py-3.5 bg-stayora-black border border-stayora-black text-white hover:bg-stayora-black/85 transition-all duration-350 block"
+                className="w-full min-h-[48px] flex items-center justify-center text-center text-xs font-sans font-bold tracking-[0.2em] uppercase py-4 bg-stayora-black border border-stayora-black text-white hover:bg-transparent hover:text-stayora-black transition-all duration-300"
               >
                 Register ↗
+              </Link>
+              <Link
+                to="/login"
+                onClick={() => setIsMobileMenuOpen(false)}
+                className="w-full min-h-[44px] flex items-center justify-center text-center text-xs font-sans font-bold tracking-[0.25em] uppercase py-3 text-stayora-black/60 hover:text-stayora-black transition-colors"
+              >
+                Log In
               </Link>
             </div>
           )}
