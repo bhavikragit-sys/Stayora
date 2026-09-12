@@ -2,7 +2,7 @@
 
 A full-stack vacation rental platform where users can discover stays, create listings, make bookings, and leave reviews.
 
-🔗 🔗 **Live Demo:** [Stayora](https://stayora-chi.vercel.app/)
+ 🔗 **Live Demo:** [Stayora](https://stayora-chi.vercel.app/)
 
 ---
 
