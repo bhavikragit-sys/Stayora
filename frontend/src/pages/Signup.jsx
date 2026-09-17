@@ -6,7 +6,6 @@ import { SplitAuthLayout } from '../components/layout/SplitAuthLayout';
 import { Input } from '../components/ui/Input';
 import { Button } from '../components/ui/Button';
 
-// Simple email format check (avoids relying on browser-native type="email" validation)
 const isValidEmail = (val) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val.trim());
 
 export const Signup = () => {
@@ -24,7 +23,6 @@ export const Signup = () => {
     e.preventDefault();
     setError('');
 
-    // --- Custom JS validation (replaces browser-native `required` / `minLength` tooltips) ---
     if (!name.trim()) {
       setError('Please enter your full name.');
       return;
@@ -45,8 +43,6 @@ export const Signup = () => {
       setError('Password must be at least 6 characters long.');
       return;
     }
-    // -------------------------------------------------------------------------
-
     setLoading(true);
     try {
       await api.post('/api/auth/signup', { name, email, password });
@@ -68,7 +64,6 @@ export const Signup = () => {
       subtitle="Join Stayora to curate your exclusive travel experiences."
       imageSrc="https://images.unsplash.com/photo-1631049307264-da0ec9d70304?q=80&w=1200&auto=format&fit=crop"
     >
-      {/* noValidate suppresses any remaining browser-native validation UI */}
       <form onSubmit={handleSignup} className="space-y-6" noValidate>
         {error && (
           <div className="p-4 bg-stayora-red/10 text-stayora-red rounded-none text-xs font-semibold">

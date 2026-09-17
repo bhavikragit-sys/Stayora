@@ -2,7 +2,7 @@ import { createContext, useContext, useState, useCallback } from 'react';
 
 const ToastContext = createContext(null);
 
-// Per-type visual config: left border accent + icon
+
 const TOAST_STYLES = {
   success: {
     border: 'border-l-emerald-400',
@@ -48,7 +48,6 @@ export const ToastProvider = ({ children }) => {
   return (
     <ToastContext.Provider value={{ addToast }}>
       {children}
-      {/* Toast container overlay */}
       <div className="fixed bottom-6 right-6 z-[100] space-y-3 pointer-events-none">
         {toasts.map((toast) => {
           const style = TOAST_STYLES[toast.type] || TOAST_STYLES.success;

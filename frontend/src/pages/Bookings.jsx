@@ -17,7 +17,6 @@ export const Bookings = () => {
   
   const [cancelError, setCancelError] = useState('');
   const [cancellingId, setCancellingId] = useState(null);
-  // confirmCancelId holds the booking._id to cancel; null = modal closed
   const [confirmCancelId, setConfirmCancelId] = useState(null);
   const [showSuccessOverlay, setShowSuccessOverlay] = useState(false);
   const [successListingTitle, setSuccessListingTitle] = useState('');
@@ -66,7 +65,6 @@ export const Bookings = () => {
     }
   });
 
-  // Called after user confirms the modal
   const executeCancel = async () => {
     const bookingId = confirmCancelId;
     setConfirmCancelId(null);
@@ -87,21 +85,17 @@ export const Bookings = () => {
   const handleReviewSubmit = async (e) => {
     e.preventDefault();
     setReviewError('');
-    // Custom validation — replacing `required` attribute on Textarea
     if (!comment.trim()) {
       setReviewError('Please write a comment before submitting your review.');
       return;
     }
     setIsSubmittingReview(true);
     try {
-      // POST /api/listings/:id/reviews
-      // Payload: bookingId, rating, comment
       await api.post(`/api/listings/${reviewBooking.listing._id}/reviews`, {
         bookingId: reviewBooking._id,
         rating: Number(rating),
         comment
       });
-      // Invalidate queries to refresh rating stats and bookings list if needed
       queryClient.invalidateQueries({ queryKey: ['my-bookings'] });
       queryClient.invalidateQueries({ queryKey: ['listings'] });
       setReviewBooking(null);
@@ -323,7 +317,6 @@ export const Bookings = () => {
         document.body
       )}
 
-      {/* Cancel Booking Confirmation Modal — replaces window.confirm() */}
       <ConfirmModal
         isOpen={confirmCancelId !== null}
         onConfirm={executeCancel}

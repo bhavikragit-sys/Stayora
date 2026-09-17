@@ -2,19 +2,6 @@ import { useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { Button } from './Button';
 
-/**
- * ConfirmModal — a Stayora-styled replacement for window.confirm().
- *
- * Props:
- *   isOpen        {boolean}  — controls visibility
- *   onConfirm     {fn}       — called when the user confirms
- *   onCancel      {fn}       — called when the user cancels or clicks the backdrop
- *   title         {string}   — modal heading
- *   message       {string}   — descriptive body text
- *   confirmLabel  {string}   — confirm button label (default: "Confirm")
- *   isDanger      {boolean}  — when true, confirm button uses stayora-red style
- *   isLoading     {boolean}  — disables buttons during async operation
- */
 export const ConfirmModal = ({
   isOpen,
   onConfirm,
@@ -25,7 +12,6 @@ export const ConfirmModal = ({
   isDanger = false,
   isLoading = false,
 }) => {
-  // Lock body scroll while open
   useEffect(() => {
     if (isOpen) {
       document.body.style.overflow = 'hidden';
@@ -37,7 +23,6 @@ export const ConfirmModal = ({
     };
   }, [isOpen]);
 
-  // Close on Escape key
   useEffect(() => {
     if (!isOpen) return;
     const handleKey = (e) => {
@@ -58,7 +43,6 @@ export const ConfirmModal = ({
         className="bg-white border border-[#E5E5E5] p-8 max-w-md w-full shadow-2xl space-y-6 text-left animate-fade-in-up"
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Icon + Title */}
         <div className="space-y-3">
           <div
             className={`w-12 h-12 rounded-full flex items-center justify-center text-xl font-bold ${
@@ -77,7 +61,6 @@ export const ConfirmModal = ({
           )}
         </div>
 
-        {/* Actions */}
         <div className="flex justify-end gap-3 pt-4 border-t border-[#E5E5E5]">
           <Button
             type="button"

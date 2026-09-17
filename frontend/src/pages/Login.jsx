@@ -6,7 +6,6 @@ import { SplitAuthLayout } from '../components/layout/SplitAuthLayout';
 import { Input } from '../components/ui/Input';
 import { Button } from '../components/ui/Button';
 
-// Simple email format check (avoids relying on browser-native type="email" validation)
 const isValidEmail = (val) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val.trim());
 
 export const Login = () => {
@@ -23,7 +22,6 @@ export const Login = () => {
     e.preventDefault();
     setError('');
 
-    // --- Custom JS validation (replaces browser-native `required` tooltips) ---
     if (!email.trim()) {
       setError('Please enter your email address.');
       return;
@@ -36,8 +34,6 @@ export const Login = () => {
       setError('Please enter your password.');
       return;
     }
-    // -------------------------------------------------------------------------
-
     setLoading(true);
     try {
       await api.post('/api/auth/login', { email, password });
@@ -59,7 +55,6 @@ export const Login = () => {
       subtitle="Log in to access your bookings and listings."
       imageSrc="https://images.unsplash.com/photo-1618221195710-dd6b41faaea6?q=80&w=1200&auto=format&fit=crop"
     >
-      {/* noValidate suppresses any remaining browser-native validation UI */}
       <form onSubmit={handleLogin} className="space-y-6" noValidate>
         {error && (
           <div className="p-4 bg-stayora-red/10 text-stayora-red rounded-none text-xs font-semibold">

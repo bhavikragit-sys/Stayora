@@ -224,7 +224,6 @@ export const ListingDetails = () => {
 
   const { addToast } = useToast();
 
-  // confirmDeleteReviewId: the review._id awaiting delete confirmation; null = modal closed
   const [confirmDeleteReviewId, setConfirmDeleteReviewId] = useState(null);
   const [isDeletingReview, setIsDeletingReview] = useState(false);
 
@@ -334,12 +333,10 @@ export const ListingDetails = () => {
     navigate(`/listings/${id}/book`, { state: { checkIn, checkOut, guests: guestNum } });
   };
 
-  // Opens the confirm modal — does NOT call the API directly
   const handleDeleteReview = (reviewId) => {
     setConfirmDeleteReviewId(reviewId);
   };
 
-  // Called after the user confirms the ConfirmModal
   const executeDeleteReview = async () => {
     const reviewId = confirmDeleteReviewId;
     setConfirmDeleteReviewId(null);
@@ -555,7 +552,6 @@ export const ListingDetails = () => {
         </div>
       </div>
 
-      {/* Delete Review Confirmation Modal — replaces window.confirm() */}
       <ConfirmModal
         isOpen={confirmDeleteReviewId !== null}
         onConfirm={executeDeleteReview}

@@ -3,26 +3,19 @@ import { Input } from '../components/ui/Input';
 import { Textarea } from '../components/ui/Textarea';
 import { useState } from 'react';
 
-// Simple email format check (avoids relying on browser-native type="email" validation)
 const isValidEmail = (val) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val.trim());
 
 export const Contact = () => {
-  // Controlled field state
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [message, setMessage] = useState('');
-
-  // Per-field inline errors (replaces browser-native `required` tooltip)
   const [fieldErrors, setFieldErrors] = useState({ name: '', email: '', message: '' });
-
-  // Overall submission success state
   const [success, setSuccess] = useState('');
 
   const handleSubmit = (e) => {
     e.preventDefault();
     setSuccess('');
 
-    // --- Custom JS validation (replaces all `required` HTML attributes) ---
     const errors = { name: '', email: '', message: '' };
     let hasError = false;
 
@@ -44,11 +37,8 @@ export const Contact = () => {
 
     setFieldErrors(errors);
     if (hasError) return;
-    // -----------------------------------------------------------------------
 
-    // Preserve original success behavior
     setSuccess('Thank you! Your message has been received.');
-    // Reset form on successful submission
     setName('');
     setEmail('');
     setMessage('');
@@ -67,7 +57,6 @@ export const Contact = () => {
       </div>
       
       <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-start">
-        {/* Contact Info */}
         <div className="space-y-6">
           <p className="text-base text-stayora-black/70 leading-relaxed font-sans">
             Have a question about a listing, a booking, or hosting on Stayora? Get in touch with our support team.
@@ -89,7 +78,6 @@ export const Contact = () => {
           </div>
         </div>
 
-        {/* Contact Form — noValidate suppresses any remaining browser-native validation UI */}
         <form onSubmit={handleSubmit} className="bg-white p-6 md:p-8 border border-[#E5E5E5] space-y-4 rounded-none" noValidate>
           <h2 className="font-editorial text-xl font-medium text-stayora-black mb-4">Send a message</h2>
           
@@ -99,7 +87,6 @@ export const Contact = () => {
             </div>
           )}
 
-          {/* Name field — fully controlled, no `required` attribute */}
           <div>
             <Input
               id="name"
@@ -117,7 +104,6 @@ export const Contact = () => {
             )}
           </div>
 
-          {/* Email field — fully controlled, no `required` attribute */}
           <div>
             <Input
               id="email"
@@ -136,7 +122,6 @@ export const Contact = () => {
             )}
           </div>
           
-          {/* Message field — fully controlled, no `required` attribute */}
           <div>
             <Textarea
               id="msg"

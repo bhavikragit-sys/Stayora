@@ -8,7 +8,6 @@ import { Input } from '../components/ui/Input';
 import { Button } from '../components/ui/Button';
 import { useToast } from '../context/ToastContext';
 
-// Simple email format check (avoids relying on browser-native type="email" validation)
 const isValidEmail = (val) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val.trim());
 
 export const Profile = () => {
@@ -43,7 +42,6 @@ export const Profile = () => {
     setSuccess('');
     setIsSaving(true);
 
-    // --- Custom JS validation (replaces browser-native `required` tooltip on inputs) ---
     if (!name.trim()) {
       setError('Full name cannot be empty.');
       setIsSaving(false);
@@ -59,8 +57,6 @@ export const Profile = () => {
       setIsSaving(false);
       return;
     }
-    // -------------------------------------------------------------------------------
-
     const payload = {};
     if (name !== user?.name) payload.name = name;
     if (email !== user?.email) payload.email = email;
@@ -165,7 +161,6 @@ export const Profile = () => {
                 </div>
               )}
 
-              {/* noValidate suppresses any remaining browser-native validation UI */}
               <form onSubmit={handleEditSubmit} className="space-y-6 py-4" noValidate>
                 <Input 
                   id="name"
