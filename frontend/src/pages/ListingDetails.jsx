@@ -3,6 +3,7 @@ import { createPortal } from 'react-dom';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useListing, useListingReviews, useListingBookings } from '../hooks/useListings';
 import { Button } from '../components/ui/Button';
+import { ConfirmModal } from '../components/ui/ConfirmModal';
 import { useAuth } from '../context/AuthContext';
 import { useQueryClient } from '@tanstack/react-query';
 import { formatPrice } from '../lib/formatPrice';
@@ -223,6 +224,10 @@ export const ListingDetails = () => {
 
   const { addToast } = useToast();
 
+  // confirmDeleteReviewId: the review._id awaiting delete confirmation; null = modal closed
+  const [confirmDeleteReviewId, setConfirmDeleteReviewId] = useState(null);
+  const [isDeletingReview, setIsDeletingReview] = useState(false);
+
   // Dynamic page title
   useEffect(() => {
     if (listing?.title) document.title = `${listing.title} · STAYORA`;
@@ -329,10 +334,16 @@ export const ListingDetails = () => {
     navigate(`/listings/${id}/book`, { state: { checkIn, checkOut, guests: guestNum } });
   };
 
-  const handleDeleteReview = async (reviewId) => {
-    if (!window.confirm("Are you sure you want to delete this review?")) {
-      return;
-    }
+  // Opens the confirm modal — does NOT call the API directly
+  const handleDeleteReview = (reviewId) => {
+    setConfirmDeleteReviewId(reviewId);
+  };
+
+  // Called after the user confirms the ConfirmModal
+  const executeDeleteReview = async () => {
+    const reviewId = confirmDeleteReviewId;
+    setConfirmDeleteReviewId(null);
+    setIsDeletingReview(true);
     try {
       await api.delete(`/api/reviews/${reviewId}`);
       queryClient.invalidateQueries({ queryKey: ['listing-reviews', id] });
@@ -340,6 +351,8 @@ export const ListingDetails = () => {
       addToast('Review deleted successfully', 'success');
     } catch (err) {
       addToast(err.response?.data?.message || 'Failed to delete review', 'error');
+    } finally {
+      setIsDeletingReview(false);
     }
   };
 
@@ -541,6 +554,18 @@ export const ListingDetails = () => {
           </div>
         </div>
       </div>
+
+      {/* Delete Review Confirmation Modal — replaces window.confirm() */}
+      <ConfirmModal
+        isOpen={confirmDeleteReviewId !== null}
+        onConfirm={executeDeleteReview}
+        onCancel={() => setConfirmDeleteReviewId(null)}
+        title="Delete This Review?"
+        message="Are you sure you want to delete your review? This cannot be undone."
+        confirmLabel="Delete Review"
+        isDanger
+        isLoading={isDeletingReview}
+      />
     </div>
   );
 };

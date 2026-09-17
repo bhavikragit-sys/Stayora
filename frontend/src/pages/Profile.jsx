@@ -8,6 +8,9 @@ import { Input } from '../components/ui/Input';
 import { Button } from '../components/ui/Button';
 import { useToast } from '../context/ToastContext';
 
+// Simple email format check (avoids relying on browser-native type="email" validation)
+const isValidEmail = (val) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val.trim());
+
 export const Profile = () => {
   const { user, setUser } = useAuth();
   const [isEditing, setIsEditing] = useState(false);
@@ -39,6 +42,24 @@ export const Profile = () => {
     setError('');
     setSuccess('');
     setIsSaving(true);
+
+    // --- Custom JS validation (replaces browser-native `required` tooltip on inputs) ---
+    if (!name.trim()) {
+      setError('Full name cannot be empty.');
+      setIsSaving(false);
+      return;
+    }
+    if (!email.trim()) {
+      setError('Email address cannot be empty.');
+      setIsSaving(false);
+      return;
+    }
+    if (!isValidEmail(email)) {
+      setError('Please enter a valid email address.');
+      setIsSaving(false);
+      return;
+    }
+    // -------------------------------------------------------------------------------
 
     const payload = {};
     if (name !== user?.name) payload.name = name;
@@ -144,14 +165,15 @@ export const Profile = () => {
                 </div>
               )}
 
-              <form onSubmit={handleEditSubmit} className="space-y-6 py-4">
+              {/* noValidate suppresses any remaining browser-native validation UI */}
+              <form onSubmit={handleEditSubmit} className="space-y-6 py-4" noValidate>
                 <Input 
                   id="name"
                   type="text" 
                   label="Full Name" 
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  required
+                  autoComplete="name"
                 />
                 <Input 
                   id="email"
@@ -159,7 +181,7 @@ export const Profile = () => {
                   label="Email Address" 
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  required
+                  autoComplete="email"
                 />
                 <Input 
                   id="password"

@@ -2,6 +2,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import api from '../lib/api/axios';
 import { Button } from '../components/ui/Button';
 import { Textarea } from '../components/ui/Textarea';
+import { ConfirmModal } from '../components/ui/ConfirmModal';
 import { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { useLocation, useNavigate } from 'react-router-dom';
@@ -16,6 +17,8 @@ export const Bookings = () => {
   
   const [cancelError, setCancelError] = useState('');
   const [cancellingId, setCancellingId] = useState(null);
+  // confirmCancelId holds the booking._id to cancel; null = modal closed
+  const [confirmCancelId, setConfirmCancelId] = useState(null);
   const [showSuccessOverlay, setShowSuccessOverlay] = useState(false);
   const [successListingTitle, setSuccessListingTitle] = useState('');
 
@@ -63,10 +66,10 @@ export const Bookings = () => {
     }
   });
 
-  const handleCancel = async (bookingId) => {
-    if (!window.confirm("Are you sure you want to cancel this booking?")) {
-      return;
-    }
+  // Called after user confirms the modal
+  const executeCancel = async () => {
+    const bookingId = confirmCancelId;
+    setConfirmCancelId(null);
     setCancelError('');
     setCancellingId(bookingId);
     try {
@@ -84,6 +87,11 @@ export const Bookings = () => {
   const handleReviewSubmit = async (e) => {
     e.preventDefault();
     setReviewError('');
+    // Custom validation — replacing `required` attribute on Textarea
+    if (!comment.trim()) {
+      setReviewError('Please write a comment before submitting your review.');
+      return;
+    }
     setIsSubmittingReview(true);
     try {
       // POST /api/listings/:id/reviews
@@ -223,7 +231,7 @@ export const Bookings = () => {
                   {canCancel && (
                     <Button 
                       variant="secondary" 
-                      onClick={() => handleCancel(booking._id)}
+                      onClick={() => setConfirmCancelId(booking._id)}
                       disabled={cancellingId === booking._id}
                       className="w-full md:w-auto text-stayora-red border-stayora-red hover:bg-stayora-red hover:text-white"
                     >
@@ -287,7 +295,6 @@ export const Bookings = () => {
                 value={comment} 
                 onChange={e => setComment(e.target.value)}
                 placeholder="What did you love or think could be improved?"
-                required
                 rows={4}
               />
 
@@ -315,6 +322,18 @@ export const Bookings = () => {
         </div>,
         document.body
       )}
+
+      {/* Cancel Booking Confirmation Modal — replaces window.confirm() */}
+      <ConfirmModal
+        isOpen={confirmCancelId !== null}
+        onConfirm={executeCancel}
+        onCancel={() => setConfirmCancelId(null)}
+        title="Cancel This Booking?"
+        message="Are you sure you want to cancel this booking? This action cannot be undone."
+        confirmLabel="Yes, Cancel Booking"
+        isDanger
+        isLoading={cancellingId !== null}
+      />
 
       {/* Fullscreen Booking Success Overlay */}
       {showSuccessOverlay && createPortal(
